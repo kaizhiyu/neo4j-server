@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<beans xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans 
+			http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+			http://www.springframework.org/schema/aop 
+			http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+			http://www.springframework.org/schema/context
+			http://www.springframework.org/schema/context/spring-context-3.0.xsd
+			http://www.springframework.org/schema/tx 
+			http://www.springframework.org/schema/tx/spring-tx.xsd
+			http://code.alibabatech.com/schema/dubbo 
+			http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+			http://www.springframework.org/schema/mvc
+        	http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+        	
+  <!--   <dubbo:application name="authcenter-gateway-http-mock"  /> -->
+   
+    <dubbo:registry id="riskBlackManage" address="192.168.0.185:2181,192.168.0.186:2181,192.168.0.188:2181" protocol="zookeeper" group="Riskctrl/black"/>
+  	
+	<dubbo:reference interface="com.lakala.creditloan.manager.provider.BlackManagerProviderService" id="blackManagerProviderService" registry="riskBlackManage"/> 
+        	
+    <dubbo:registry id="graphManage" address="192.168.0.207:2181" protocol="zookeeper" group="bigdatacenter-graph"/>
+  	
+	<dubbo:reference interface="com.lakala.bigdatacenter.query.gateway.dubbo.api.DataProductQueryFacade" id="dataProductQueryFacade" registry="graphManage"/> 
+</beans>

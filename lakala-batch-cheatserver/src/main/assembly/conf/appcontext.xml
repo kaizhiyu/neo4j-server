@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans 
+			http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+			http://www.springframework.org/schema/aop 
+			http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+			http://www.springframework.org/schema/context
+			http://www.springframework.org/schema/context/spring-context-3.0.xsd
+			http://www.springframework.org/schema/tx 
+			http://www.springframework.org/schema/tx/spring-tx.xsd
+			http://code.alibabatech.com/schema/dubbo 
+			http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+			http://www.springframework.org/schema/mvc
+        	http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+	<!-- <context:property-placeholder ignore-resource-not-found="true" system-properties-mode="OVERRIDE" 
+		location="classpath*:application.properties" /> -->
+	<bean id="appPlaceholderProperties"
+		class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:application.properties</value>
+			</list>
+		</property>
+		<property name="ignoreUnresolvablePlaceholders" value="false" />
+	</bean>
+	<context:component-scan base-package="com.lakala.contactlist.batch.query.service.impl" />
+	 <dubbo:application name="lakala-batch-cheatserver"  />
+    	 
+<!-- 	<dubbo:registry address="192.168.20.22:2181" protocol="zookeeper" group="bigdatacenter-graph"/>
+	 -->
+<!-- 	<dubbo:reference interface="com.lakala.contactlist.batch.query.service.ExcelQueryService" id="excelQueryService"/> 
+ -->
+
+</beans>

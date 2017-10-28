@@ -1,0 +1,128 @@
+package com.lakala.neo4j.importdata.main;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.lakala.neo4j.importdata.dao.Neo4jHelperDao;
+
+public class ImportOrderInfoMain {
+	private static List<String> listfile=new ArrayList<String>();
+	public static void main(String[] args) {
+		
+		System.out.println("Start handle data format!");
+		System.out.println("input args :"+args[0]);
+		//取得输入参数 
+		String[] argsarr=args[0].split(",");
+		//argsarr中第一个参数是文件路劲 第二个是ip地址
+		Neo4jHelperDao.url="bolt://"+argsarr[1]+":7687";
+		//通过文件路劲读取数据
+		updateEmergeMobile(argsarr[0]);	
+	}
+	
+	/**
+	 * 将进件用户数据导入到neo4j
+	 * @param paths
+	 * @param outputfile
+	 */
+	private static void updateEmergeMobile(String filepath) {
+		try {
+			traverseFolder(filepath);
+			long t1=System.currentTimeMillis();
+			listfile.parallelStream().forEach(p->{
+				System.out.println("read path:"+p);
+				BufferedReader br=null;
+				try {
+					br = new BufferedReader(new FileReader(p));//构造一个BufferedReader类来读取文件
+					String str = null;
+					long idex=0;
+					while((str = br.readLine())!=null){
+						try {
+							idex++;
+							System.out.println(Thread.currentThread().getName()+":Start import data!");
+							saveEmergencyMobile(str,idex);
+							System.out.println(Thread.currentThread().getName()+":End import data!");							
+						} catch (Exception e) {
+							System.err.println(Thread.currentThread()+":ImportIpMain updateIp br:"+str+" [err:"+e.getMessage()+"]");
+						}
+					}
+					System.out.println(Thread.currentThread()+":import success!");
+					System.out.println(Thread.currentThread()+":ImportIpMain updateIp cost milliseconds time:"+(System.currentTimeMillis()- t1)+"ms");
+					
+				} catch (Exception e) {
+					System.err.println(Thread.currentThread()+":handleApply error:"+e.getMessage());
+				}
+				finally{
+					if(br!=null){
+						try {
+							br.close();
+						} catch (Exception e) {
+							System.err.println(e.getMessage());
+						}
+						
+					}
+				}
+//				
+			});
+			
+		} catch (Exception e) {
+			System.out.println(Thread.currentThread()+":ImportIpMain updateIp Executing error:"+e.getMessage());
+		}
+
+	}
+	
+	/**
+	 * 递归获取当前文件夹下所有文件
+	 * @param path
+	 */
+	public static void traverseFolder(String path) {
+		
+        File file = new File(path);
+        if (file.exists()) {
+            File[] files = file.listFiles();
+            if (files.length == 0) {
+                System.out.println("文件夹是空的!");
+                return;
+            } else {
+                for (File file2 : files) {
+                    if (file2.isDirectory()) {
+                        System.out.println("文件夹:" + file2.getAbsolutePath());
+                        traverseFolder(file2.getAbsolutePath());
+                    } else {
+                		listfile.add(file2.getAbsolutePath());
+                		System.out.println("文件:" + file2.getAbsolutePath());
+                    	
+                    }
+                }
+            }
+        } else {
+            System.out.println("文件不存在!");
+        }
+    }
+	
+	
+	/**
+	 * 将紧急联系人和合同号保存到进件信息中
+	 * @param line
+	 * @param idex
+	 * @return
+	 */
+	public static void saveEmergencyMobile(String line,long idex) {
+		
+		String[] arr=line.split("\001");
+		Map<String, String> map=new HashMap<String, String>();
+		if(arr[0]!=null&&!arr[0].equals("")&&!arr[0].equals("null")&&arr[61]!=null&&!arr[61].equals("")&&!arr[61].equals("null")){
+			map.put("empmobile",arr[0]);
+			System.out.println("index:"+idex+",orderno:"+arr[0]);
+			Neo4jHelperDao.executeInsert("MERGE (p:ApplyInfo {orderno:'"+arr[0]+"'}) set p.modelname='ApplyInfo',p.orderno='"+arr[0]+"',p.emergencymobile='"+arr[61]+"' MERGE (q:Mobile {content:'"+arr[61]+"'}) set q.modelname='ApplyInfo',q.content='"+arr[61]+"',q.group='2'  MERGE (p)-[:emergencymobile]->(q)");
+		}
+		else {
+			return;
+		}
+	}
+	
+}

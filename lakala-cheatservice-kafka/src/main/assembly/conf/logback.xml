@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration>
+<configuration debug="true" scan="true" scanPeriod="30 seconds"><!-- 'milliseconds','seconds','minutes' 
+		and 'hours' -->
+	<contextName>bigdatacenter-query-gateway-dubbo-interface-provider</contextName>
+	<Property name="log.base" value="/home/dataAnalysis/bigdatacenter-gateway-graph/lakala-cheatservice-kafka-0.0.1-SNAPSHOT/logs" />
+	<Property name="log.name" value="lakala-cheatservice-kafka" />
+	<jmxConfigurator />
+	<!-- 控制台输出日志 -->
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>%-5level [%contextName] %d{yyyy-MM-dd HH:mm:ss.SSS}
+				[%thread] %logger - %msg%n</pattern>
+		</encoder>
+	</appender>
+	<!-- 文件输出日志 (文件大小策略进行文件输出，超过指定大小对文件备份) -->
+	<appender name="FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>${log.base}/${log.name}.log</File>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"><!-- rollover daily -->
+			<FileNamePattern>${log.base}/${log.name}-log-%d{yyyy-MM-dd}.%i.zip</FileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>5MB</maxFileSize><!-- or whenever the file size reaches 
+					5MB -->
+			</timeBasedFileNamingAndTriggeringPolicy>
+			<!-- <maxHistory></maxHistory> -->
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>%-5level [%contextName] %d{yyyy-MM-dd HH:mm:ss.SSS}
+				[%thread] %logger.%method - %msg%n</Pattern>
+		</encoder>
+	</appender>
+
+	<appender name="FILE-ERROR"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- <filter class="ch.qos.logback.classic.filter.LevelFilter"> <level>ERROR</level> 
+			<OnMismatch>DENY</OnMismatch> <OnMatch>ACCEPT</OnMatch> </filter> -->
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>WARN</level><!-- WARN以下的拒绝,等于或以上的中立 -->
+		</filter>
+		<File>${log.base}/${log.name}-err.log</File>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"><!-- rollover daily -->
+			<FileNamePattern>${log.base}/${log.name}-log-%d{yyyy-MM-dd}.%i.zip</FileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>5MB</maxFileSize><!-- or whenever the file size reaches 
+					5MB -->
+			</timeBasedFileNamingAndTriggeringPolicy>
+			<!-- <maxHistory></maxHistory> -->
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>%-5level [%contextName] %d{yyyy-MM-dd HH:mm:ss.SSS}
+				[%thread] %logger.%method - %msg%n</Pattern>
+		</encoder>
+	</appender>
+
+	<appender name="TRACE_FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>${log.base}/${log.name}-trace.log</File>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<FileNamePattern>${log.base}/${log.name}-trace.log.%i.zip</FileNamePattern>
+			<MinIndex>1</MinIndex>
+			<MaxIndex>12</MaxIndex>
+		</rollingPolicy>
+		<triggeringPolicy
+			class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>10MB</MaxFileSize>
+		</triggeringPolicy>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>%-5level [%contextName] %d{yyyy-MM-dd HH:mm:ss.SSS}
+				[%thread] %logger.%method - %msg%n</Pattern>
+		</encoder>
+	</appender>
+
+
+	<appender name="FULISHE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>${log.base}/fulishe.log</File>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${log.base}/fulishe-%d{yyyy-MM-dd}.log</fileNamePattern>
+			<maxHistory>2</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%msg%n</pattern>
+		</encoder>
+	</appender>
+
+	
+	<!-- 添加elk -->
+<!-- 		<appender name="dataStash"
+		class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+		<destination>192.168.0.37:4560</destination>
+		<encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+	</appender> -->
+
+	<root level="INFO">
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="FILE" />
+		<appender-ref ref="FILE-ERROR" />
+	</root>
+
+	<!--这里指定logger name 是为jmx设置日志级别做铺垫 -->
+	<logger name="com.lakala" additivity="true" level="INFO" />
+	<logger
+		name="com.lakala.bigdatacenter.query.gateway.component.fulishe.impl.FulisheLogger"
+		additivity="false" level="INFO">
+		<appender-ref ref="dataStash" />
+		<appender-ref ref="FULISHE" />
+	</logger>
+	<logger name="org.springframework" additivity="true" level="ERROR" />
+	<logger name="org.apache.ibatis" additivity="true" level="ERROR" />
+	<logger name="org.mybatis" additivity="true" level="ERROR" />
+	<logger name="java.sql" additivity="true" level="ERROR" />
+	<logger name="com.alibaba" additivity="true" level="ERROR" />
+	<logger name="org.I0Itec.zkclient" additivity="true" level="ERROR" />
+	<logger name="org.apache.zookeeper" additivity="true" level="ERROR" />
+</configuration>
